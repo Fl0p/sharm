@@ -1,8 +1,7 @@
 #!/bin/bash
 
+cd $(dirname $0)
 pwd
-ls -la
-whoami
 
 if [ -z "$SHARM" ]; then
     echo "Should be run in a SHARM container"
