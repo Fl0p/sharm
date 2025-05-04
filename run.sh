@@ -26,7 +26,9 @@ echo "do you want to start listening to the SNAPSERVER stream? (y/n)"
 read answer
 
 if [ "$answer" = "y" ]; then
-    snapclient -h localhost -p ${SNAPSERVER_PORT}
+    #snapclient -h localhost -p ${SNAPSERVER_PORT}
+    snapclient -h localhost -p ${SNAPSERVER_PORT} --logsink null -i 1 --player file:filename=stdout | \
+    ffplay -f s16le -ar 48000 -ch_layout 5.1 -af "pan=mono|c0=c2" -fflags nobuffer -flags low_delay -probesize 32 -analyzeduration 0 -
 fi
 
 echo "do you want to start listening to the MPD stream? (y/n)"
