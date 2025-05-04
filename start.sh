@@ -21,7 +21,7 @@ echo "Starting mpd Client on port ${MPD_CLIENT_PORT} stream port ${MPD_STREAM_PO
 mpd /etc/mpd.conf
 
 echo "Starting snapserver"
-# snapserver -c /etc/snapserver.conf
+snapserver -d -c /etc/snapserver.conf
 
 echo "Starting ympd with port ${YMPD_PORT}"
 ympd -w ${YMPD_PORT}

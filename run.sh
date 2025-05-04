@@ -22,7 +22,14 @@ fi
 
 echo "run 'mpv http://localhost:${MPD_STREAM_PORT}' to listen to the stream"
 
-echo "do you want to start listening to the stream? (y/n)"
+echo "do you want to start listening to the SNAPSERVER stream? (y/n)"
+read answer
+
+if [ "$answer" = "y" ]; then
+    snapclient -h localhost -p ${SNAPSERVER_PORT}
+fi
+
+echo "do you want to start listening to the MPD stream? (y/n)"
 read answer
 
 if [ "$answer" = "y" ]; then
