@@ -5,14 +5,19 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        YMPD_PORT: ${YMPD_PORT}
+        FIFO_PATH: ${FIFO_PATH}
         MPD_CLIENT_PORT: ${MPD_CLIENT_PORT}
         MPD_STREAM_PORT: ${MPD_STREAM_PORT}
+        SNAPSERVER_PORT: ${SNAPSERVER_PORT}
+        SNAPSERVER_HTTP_PORT: ${SNAPSERVER_HTTP_PORT}
+        YMPD_PORT: ${YMPD_PORT}
     container_name: sharm
     restart: unless-stopped
     ports:
       - ${MPD_CLIENT_PORT}:${MPD_CLIENT_PORT}  # MPD Client
       - ${MPD_STREAM_PORT}:${MPD_STREAM_PORT}  # Stream
+      - ${SNAPSERVER_PORT}:${SNAPSERVER_PORT}  # snapserver
+      - ${SNAPSERVER_HTTP_PORT}:${SNAPSERVER_HTTP_PORT}  # snapserver http
       - ${YMPD_PORT}:${YMPD_PORT}  # ympd
     volumes:
       - ./media:/var/lib/mpd/music:ro
