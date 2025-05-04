@@ -1,43 +1,34 @@
 services:
   
-  mpd:
+  sharm:
     build:
       context: .
-      dockerfile: mpd.Dockerfile
-    container_name: mpd
+      dockerfile: Dockerfile
+      args:
+        YMPD_PORT: ${YMPD_PORT}
+        MPD_CLIENT_PORT: ${MPD_CLIENT_PORT}
+        MPD_STREAM_PORT: ${MPD_STREAM_PORT}
+    container_name: sharm
     restart: unless-stopped
     ports:
-      - 6600:6600  # MPD Client
-      - 8000:8000  # Stream
+      - ${MPD_CLIENT_PORT}:${MPD_CLIENT_PORT}  # MPD Client
+      - ${MPD_STREAM_PORT}:${MPD_STREAM_PORT}  # Stream
+      - ${YMPD_PORT}:${YMPD_PORT}  # ympd
     volumes:
       - ./media:/var/lib/mpd/music:ro
-      - mpd_data:/var/lib/mpd
+      - sharm_data:/var/lib/mpd
     healthcheck:
       test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 6600 || exit 1"]
       interval: 10s
       timeout: 1s
-      retries: 3      
+      retries: 3
     networks:
-      - shared-network
-
-  ympd:
-    image: giof71/ympd:stable
-    container_name: ympd
-    restart: unless-stopped
-    ports:
-      - 8080:8080
-    environment:
-      - MPD_HOSTNAME=mpd
-      - MPD_PORT=6600
-    networks:
-      - shared-network
-    depends_on:
-      - mpd
+      - sharm-network
 
 volumes:
-  mpd_data:
+  sharm_data:
 
 networks:
-  shared-network:
+  sharm-network:
     driver: bridge
  
