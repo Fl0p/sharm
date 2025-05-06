@@ -35,6 +35,7 @@ RUN apt-get install -y --no-install-recommends \
         wget \
         git \
         alsa-utils \
+        libasound2 \
         mpd \
         mpc \
         timidity \
@@ -49,6 +50,9 @@ RUN apt-get install -y --no-install-recommends \
 RUN update-ca-certificates
 
 RUN rm -rf /var/lib/apt/lists/*
+
+# alsa
+COPY asound.conf /etc/asound.conf
 
 # mpd
 RUN mkdir -p /var/lib/mpd/data ; \
