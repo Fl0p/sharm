@@ -34,7 +34,12 @@ RUN apt-get install -y --no-install-recommends \
         ca-certificates \
         wget \
         git \
+        coreutils \
         alsa-utils \
+        pulseaudio \
+        pulseaudio-utils \
+        procps \
+        ffmpeg \
         libasound2 \
         mpd \
         mpc \
@@ -50,6 +55,9 @@ RUN apt-get install -y --no-install-recommends \
 RUN update-ca-certificates
 
 RUN rm -rf /var/lib/apt/lists/*
+
+RUN useradd -ms /bin/bash audioapp && \
+    usermod -a -G audio audioapp
 
 # alsa
 COPY asound.conf /etc/asound.conf

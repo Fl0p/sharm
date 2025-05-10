@@ -20,7 +20,7 @@ services:
       - ${SNAPSERVER_HTTP_PORT}:${SNAPSERVER_HTTP_PORT}  # snapserver http
       - ${YMPD_PORT}:${YMPD_PORT}  # ympd
     volumes:
-      - ./media:/var/lib/mpd/music:ro
+      - ./media:/var/lib/mpd/music:rw
       - sharm_data:/var/lib/mpd
     healthcheck:
       test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 6600 || exit 1"]
