@@ -37,6 +37,8 @@ RUN apt-get install -y --no-install-recommends \
         ca-certificates \
         wget \
         git \
+        cmake \
+        build-essential \
         avahi-daemon \
         avahi-utils \
         dbus \
@@ -47,6 +49,15 @@ RUN apt-get install -y --no-install-recommends \
         sox \
         libasound2 \
         alsa-utils \
+        libasound2-dev \
+        libpulse-dev \
+        libvorbisidec-dev \
+        libvorbis-dev \
+        libopus-dev \
+        libflac-dev \
+        libsoxr-dev \
+        libavahi-client-dev \
+        libexpat1-dev \
         pulseaudio \
         pulseaudio-utils \
         procps \
@@ -55,8 +66,6 @@ RUN apt-get install -y --no-install-recommends \
         mpc \
         timidity \
         libmpdclient-dev \
-        cmake \
-        build-essential \
         libtool \
         pkg-config \
         libssl-dev \
