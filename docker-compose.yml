@@ -6,6 +6,7 @@ services:
       dockerfile: Dockerfile
       args:
         FIFO_PATH: ${FIFO_PATH}
+        FIFO_PATH_STEREO: ${FIFO_PATH_STEREO}
         MPD_CLIENT_PORT: ${MPD_CLIENT_PORT}
         MPD_STREAM_PORT: ${MPD_STREAM_PORT}
         SNAPSERVER_PORT: ${SNAPSERVER_PORT}
@@ -22,11 +23,11 @@ services:
     volumes:
       - ./media:/var/lib/mpd/music:rw
       - sharm_data:/var/lib/mpd
-    healthcheck:
-      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 6600 || exit 1"]
-      interval: 10s
-      timeout: 1s
-      retries: 3
+    # healthcheck:
+    #   test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 6600 || exit 1"]
+    #   interval: 10s
+    #   timeout: 1s
+    #   retries: 3
     networks:
       - sharm-network
 

@@ -5,6 +5,9 @@ ENV SHARM=true
 ARG FIFO_PATH
 ENV FIFO_PATH=${FIFO_PATH}
 
+ARG FIFO_PATH_STEREO
+ENV FIFO_PATH_STEREO=${FIFO_PATH_STEREO}
+
 ARG MPD_CLIENT_PORT
 ENV MPD_CLIENT_PORT=${MPD_CLIENT_PORT}
 
@@ -100,6 +103,7 @@ RUN snapserver -v
 
 COPY snapserver.conf /home/snapserver.conf
 RUN echo "FIFO_PATH=${FIFO_PATH}"
+RUN echo "FIFO_PATH_STEREO=${FIFO_PATH_STEREO}"
 RUN envsubst < /home/snapserver.conf > /etc/snapserver.conf
 
 RUN mkdir -p /var/log/snapserver ; \
