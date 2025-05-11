@@ -42,12 +42,15 @@ RUN apt-get install -y --no-install-recommends \
         dbus \
         systemd \
         coreutils \
+        jackd2 \
+        jack-tools \
+        sox \
+        libasound2 \
         alsa-utils \
         pulseaudio \
         pulseaudio-utils \
         procps \
         ffmpeg \
-        libasound2 \
         mpd \
         mpc \
         timidity \

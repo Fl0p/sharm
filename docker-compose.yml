@@ -13,6 +13,17 @@ services:
         SNAPSERVER_HTTP_PORT: ${SNAPSERVER_HTTP_PORT}
         YMPD_PORT: ${YMPD_PORT}
     container_name: sharm
+    cap_add:
+      - IPC_LOCK
+      - SYS_NICE
+    shm_size: 256M
+    ulimits:
+      memlock:
+        soft: 268435456
+        hard: 536870912
+      # rtprio: 95
+    # cpu_rt_runtime: 950000
+    # cpu_rt_period: 1000000
     restart: unless-stopped
     ports:
       - ${MPD_CLIENT_PORT}:${MPD_CLIENT_PORT}  # MPD Client
