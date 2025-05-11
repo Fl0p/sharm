@@ -31,15 +31,41 @@ echo "Starting Avahi daemon"
 avahi-daemon -D --no-chroot
 ps aux | grep avahi-daemon | cat
 
+echo "Starting PulseAudio service from pulse.sh..."
+./pulse.sh
+# Assuming pulse.sh will exit on error due to 'set -e'
+echo "PulseAudio service script call completed."
+
 echo "Starting mpd Client on port ${MPD_CLIENT_PORT} stream port ${MPD_STREAM_PORT}"
 mpd /etc/mpd.conf
+sleep 2 #give mpd a moment to start or fail
+if ! mpc status > /dev/null 2>&1; then
+    echo "MPD failed to start. Check /var/log/mpd/mpd.log"
+    cat /var/log/mpd/mpd.log || true
+    exit 1
+fi
+echo "MPD started."
 
-echo "Avahi-browse show services"
-avahi-browse -a -t -r
 
 echo "Starting ympd with port ${YMPD_PORT}"
 ympd -w ${YMPD_PORT} &
+YMPD_PID=$!
+sleep 2 # Give ympd a moment to start or fail
+# Check if process is running by PID and listening on port
+if ! kill -0 $YMPD_PID > /dev/null 2>&1; then
+    echo "ympd failed to start (process $YMPD_PID not found)."
+    # You might want to check ympd logs here if available
+    cat /var/log/ympd/ympd.log || true
+    sleep 10
+    exit 1
+else
+    echo "ympd started successfully. PID: $YMPD_PID. Listening on port ${YMPD_PORT}."
+fi
 
+
+echo "--------------------------------"
+echo "Avahi-browse show services"
+avahi-browse -a -t -r
 echo "--------------------------------"
 
 echo "Starting snapserver"
