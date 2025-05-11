@@ -50,14 +50,14 @@ RUN apt-get install -y --no-install-recommends \
         libtool \
         pkg-config \
         libssl-dev \
-        gettext
+        gettext \
+        avahi-daemon \
+        avahi-utils \
+        dbus
 
 RUN update-ca-certificates
 
 RUN rm -rf /var/lib/apt/lists/*
-
-RUN useradd -ms /bin/bash audioapp && \
-    usermod -a -G audio audioapp
 
 # alsa
 COPY asound.conf /etc/asound.conf
@@ -74,7 +74,8 @@ RUN echo "MPD_CLIENT_PORT=${MPD_CLIENT_PORT}"
 RUN echo "MPD_STREAM_PORT=${MPD_STREAM_PORT}"
 RUN envsubst < /home/mpd.conf > /etc/mpd.conf
 
-RUN chown -R mpd:audio /var/lib/mpd ; \
+RUN mkdir -p /var/log/mpd && chown -R mpd:audio /var/log/mpd ; \
+    chown -R mpd:audio /var/lib/mpd ; \
     chown -R mpd:audio /etc/mpd.conf ; \
     mkdir -p /run/mpd && chown -R mpd:audio /run/mpd
     
@@ -98,6 +99,9 @@ RUN snapserver -v
 COPY snapserver.conf /home/snapserver.conf
 RUN echo "FIFO_PATH=${FIFO_PATH}"
 RUN envsubst < /home/snapserver.conf > /etc/snapserver.conf
+
+RUN mkdir -p /var/log/snapserver ; \
+    mkdir -p /var/run/snapserver
 
 EXPOSE 1704 1705
 
