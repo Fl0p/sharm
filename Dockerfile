@@ -127,6 +127,10 @@ WORKDIR /home
 # copy .env
 COPY .env /home/.env
 
+#copy pulse.sh
+COPY pulse.sh /home/pulse.sh
+RUN chmod +x /home/pulse.sh
+
 # copy start.sh
 COPY start.sh /home/start.sh
 RUN chmod +x /home/start.sh
