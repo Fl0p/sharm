@@ -34,6 +34,10 @@ RUN apt-get install -y --no-install-recommends \
         ca-certificates \
         wget \
         git \
+        avahi-daemon \
+        avahi-utils \
+        dbus \
+        systemd \
         coreutils \
         alsa-utils \
         pulseaudio \
@@ -50,10 +54,8 @@ RUN apt-get install -y --no-install-recommends \
         libtool \
         pkg-config \
         libssl-dev \
-        gettext \
-        avahi-daemon \
-        avahi-utils \
-        dbus
+        gettext
+
 
 RUN update-ca-certificates
 
