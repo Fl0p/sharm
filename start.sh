@@ -13,8 +13,16 @@ if [ -f .env ]; then
     source .env
 fi
 
+rm -f ${FIFO_PATH}
 mkfifo ${FIFO_PATH}
 chmod 666 ${FIFO_PATH}
+
+rm -f ${FIFO_PATH_STEREO}
+mkfifo ${FIFO_PATH_STEREO}
+chmod 666 ${FIFO_PATH_STEREO}
+
+
+echo "FIFO created"
 
 echo "Starting D-Bus daemon"
 # Ensure D-Bus is running (dependency for systemd units)
@@ -31,10 +39,10 @@ echo "Starting Avahi daemon"
 avahi-daemon -D --no-chroot
 ps aux | grep avahi-daemon | cat
 
-echo "Starting PulseAudio service from pulse.sh..."
-./pulse.sh
-# Assuming pulse.sh will exit on error due to 'set -e'
-echo "PulseAudio service script call completed."
+# echo "Starting PulseAudio service from pulse.sh..."
+# ./pulse.sh
+# # Assuming pulse.sh will exit on error due to 'set -e'
+# echo "PulseAudio service script call completed."
 
 echo "Starting mpd Client on port ${MPD_CLIENT_PORT} stream port ${MPD_STREAM_PORT}"
 mpd /etc/mpd.conf
