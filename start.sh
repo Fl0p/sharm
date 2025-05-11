@@ -13,6 +13,7 @@ if [ -f .env ]; then
     source .env
 fi
 
+echo "create fifo ${FIFO_PATH} ${FIFO_PATH_STEREO}"
 rm -f ${FIFO_PATH}
 mkfifo ${FIFO_PATH}
 chmod 666 ${FIFO_PATH}
@@ -20,9 +21,21 @@ chmod 666 ${FIFO_PATH}
 rm -f ${FIFO_PATH_STEREO}
 mkfifo ${FIFO_PATH_STEREO}
 chmod 666 ${FIFO_PATH_STEREO}
-
-
 echo "FIFO created"
+
+echo "Starting JACK server"
+jackd -R -S -d dummy -r48000 -p64 &
+JACK_PID=$!
+sleep 2
+
+jack_connect system:playback_1 system:capture_1
+jack_connect system:playback_2 system:capture_2
+
+# # Check JACK connections
+echo "Checking JACK connections"
+jack_lsp
+jack_lsp -c
+echo "JACK ready. ALSA-applications can open pcm 'jack'."
 
 echo "Starting D-Bus daemon"
 # Ensure D-Bus is running (dependency for systemd units)
