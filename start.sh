@@ -24,14 +24,19 @@ chmod 666 ${FIFO_PATH_STEREO}
 echo "FIFO created"
 
 echo "Starting JACK server"
-jackd -R -S -d dummy -r48000 -p64 &
+jackd -R -S -d dummy -r48000 -p256 &
 JACK_PID=$!
 sleep 2
 
-jack_connect system:playback_1 system:capture_1
-jack_connect system:playback_2 system:capture_2
+jack_thru loopback &
+JACK_THRU_PID=$!
+sleep 2
 
-# # Check JACK connections
+jack_disconnect system:capture_1 loopback:input_1 && jack_disconnect system:capture_2 loopback:input_2
+
+# Check JACK connections
+echo "Checking JACK ports"
+jack_lsp -t -p
 echo "Checking JACK connections"
 jack_lsp
 jack_lsp -c

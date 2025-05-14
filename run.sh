@@ -20,6 +20,8 @@ else
     exit 1
 fi
 
+exit 0
+
 echo "run 'mpv http://localhost:${MPD_STREAM_PORT}' to listen to the stream"
 
 echo "do you want to start listening to the SNAPSERVER stream? (y/n)"
