@@ -32,7 +32,8 @@ jack_thru loopback &
 JACK_THRU_PID=$!
 sleep 2
 
-jack_disconnect system:capture_1 loopback:input_1 && jack_disconnect system:capture_2 loopback:input_2
+jack_disconnect system:capture_1 loopback:input_1
+jack_disconnect system:capture_2 loopback:input_2
 
 # Check JACK connections
 echo "Checking JACK ports"
