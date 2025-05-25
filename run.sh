@@ -9,9 +9,9 @@ if [ -f .env ]; then
     source .env
 fi
 
-docker compose down || true
+docker compose down --rmi all || true
 
-docker compose up -d --build
+docker compose up -d --build --force-recreate
 
 if [ $? -eq 0 ]; then
     echo "Docker container started successfully"

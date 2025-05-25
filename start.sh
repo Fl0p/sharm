@@ -24,7 +24,7 @@ chmod 666 ${FIFO_PATH_STEREO}
 echo "FIFO created"
 
 echo "Starting JACK server"
-jackd -R -S -d dummy -r48000 -p512 -C6 -P6 -m &
+jackd -R -S -L 6 -d dummy -r48000 -p1024 -C6 -P6 -m &
 JACK_PID=$!
 sleep 2
 
