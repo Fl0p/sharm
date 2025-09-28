@@ -28,5 +28,5 @@ source ~/venv/bin/activate
 
 deps
 ```
-pip install rpi_ws281x pigpio
+pip3 install adafruit-circuitpython-neopixel
 ```
