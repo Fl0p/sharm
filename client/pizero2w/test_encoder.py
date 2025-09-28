@@ -2,111 +2,51 @@
 import pigpio
 import time
 import sys
+import os
 
-# GPIO pins (BCM numbering)
-PIN_A = 22
-PIN_B = 23
 PIN_BTN = 24
+SLEEP_SEC = 0.1
 
-# Debounce/glitch filters in microseconds
-GLITCH_AB_US = 2000   # 2 ms for encoder channels
-GLITCH_BTN_US = 5000  # 5 ms for push button
-
-class RotaryEncoder:
-    """
-    Full-step quadrature decoder using pigpio callbacks.
-    Counts every valid state transition (x4 resolution).
-    """
-    # Valid transitions encoded as previous_state << 2 | current_state
-    # State is 2-bit: (A<<1 | B)
-    _TRANSITION_TABLE = {
-        0b0001: +1, 0b0010: -1, 0b0100: -1, 0b0111: +1,
-        0b1000: +1, 0b1011: -1, 0b1101: -1, 0b1110: +1
-    }
-
-    def __init__(self, pi: pigpio.pi, pin_a: int, pin_b: int):
-        self.pi = pi
-        self.pin_a = pin_a
-        self.pin_b = pin_b
-        self.position = 0
-
-        # Ensure inputs + pull-ups
-        for p in (self.pin_a, self.pin_b):
-            self.pi.set_mode(p, pigpio.INPUT)
-            self.pi.set_pull_up_down(p, pigpio.PUD_UP)
-            self.pi.set_glitch_filter(p, GLITCH_AB_US)
-
-        # Read initial 2-bit state
-        a = self.pi.read(self.pin_a)
-        b = self.pi.read(self.pin_b)
-        self._state = (a << 1) | b
-
-        # Keep references to callbacks!
-        self.cb_a = self.pi.callback(self.pin_a, pigpio.EITHER_EDGE, self._edge)
-        self.cb_b = self.pi.callback(self.pin_b, pigpio.EITHER_EDGE, self._edge)
-
-    def _edge(self, gpio: int, level: int, tick: int):
-        # Read both channels atomically-ish
-        a = self.pi.read(self.pin_a)
-        b = self.pi.read(self.pin_b)
-        new_state = (a << 1) | b
-
-        key = (self._state << 2) | new_state
-        delta = self._TRANSITION_TABLE.get(key, 0)
-        if delta:
-            self.position += delta
-            print(f"[ENC] pos={self.position} (delta={delta}, A={a}, B={b})")
-        self._state = new_state
-
-    def cancel(self):
-        self.cb_a.cancel()
-        self.cb_b.cancel()
-
-class PushButton:
-    """Simple falling-edge button with optional glitch filter."""
-    def __init__(self, pi: pigpio.pi, pin: int, on_press):
-        self.pi = pi
-        self.pin = pin
-        self.on_press = on_press
-
-        self.pi.set_mode(self.pin, pigpio.INPUT)
-        self.pi.set_pull_up_down(self.pin, pigpio.PUD_UP)
-        self.pi.set_glitch_filter(self.pin, GLITCH_BTN_US)
-
-        self.cb = self.pi.callback(self.pin, pigpio.FALLING_EDGE, self._pressed)
-
-    def _pressed(self, gpio: int, level: int, tick: int):
-        # level==0 on falling edge due to pull-up
-        try:
-            self.on_press()
-        except Exception as e:
-            print(f"[BTN] handler error: {e}", file=sys.stderr)
-
-    def cancel(self):
-        self.cb.cancel()
+def ts():
+    t = time.time()
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t)) + f".{int((t % 1)*1000):03d}"
 
 def main():
+    print(f"[INIT] Python={sys.version.split()[0]} argv={sys.argv} cwd={os.getcwd()}", flush=True)
     pi = pigpio.pi()
     if not pi.connected:
         raise RuntimeError("pigpiod is not running! Start it with: sudo pigpiod")
 
-    enc = RotaryEncoder(pi, PIN_A, PIN_B)
+    rev = pi.get_hardware_revision()
+    print(f"[INIT] pigpio connected, hw_rev=0x{rev:X}", flush=True)
 
-    def handle_press():
-        print("[BTN] pressed")
+    pi.set_mode(PIN_BTN, pigpio.INPUT)
+    pi.set_pull_up_down(PIN_BTN, pigpio.PUD_UP)
 
-    btn = PushButton(pi, PIN_BTN, handle_press)
+    initial = pi.read(PIN_BTN)
+    print(f"[CFG] Set PIN {PIN_BTN} as INPUT with PUD_UP", flush=True)
+    print(f"[STATE] {ts()} initial_level={initial}", flush=True)
 
-    print("Rotate the encoder on GPIO22/23 and press the button on GPIO24 (Ctrl+C to exit)")
+    last = initial
+    counter = 0
+    print("[RUN] Polling started (Ctrl+C to exit)", flush=True)
     try:
         while True:
-            time.sleep(1)
+            val = pi.read(PIN_BTN)
+            if val != last:
+                print(f"[EDGE] {ts()} level={val}", flush=True)
+                last = val
+
+            counter += 1
+            if counter % int(1 / SLEEP_SEC) == 0:
+                # Heartbeat once per ~1s
+                print(f"[HB]  {ts()} level={val}", flush=True)
+            time.sleep(SLEEP_SEC)
     except KeyboardInterrupt:
-        print("Exiting...")
+        print("\n[EXIT] KeyboardInterrupt", flush=True)
     finally:
-        btn.cancel()
-        enc.cancel()
         pi.stop()
+        print("[CLEANUP] pigpio stopped", flush=True)
 
 if __name__ == "__main__":
     main()
