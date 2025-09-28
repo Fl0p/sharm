@@ -4,8 +4,8 @@ import board
 import neopixel
 
 # === LED strip settings ===
-# DIN connected to GPIO12
-LED_PIN = board.D12  # change if you wire DIN to another pin
+# Use MOSI (GPIO10) for sudo-less output per Adafruit guide
+LED_PIN = board.D10  # change if you wire DIN to another pin
 LED_COUNT = 7  # number of LEDs
 BRIGHTNESS = 0.2
 PIXEL_ORDER = neopixel.GRB  # most WS2812B are GRB
