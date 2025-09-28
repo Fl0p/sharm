@@ -3,7 +3,7 @@ import pigpio
 from rpi_ws281x import PixelStrip, Color
 
 LED_COUNT      = 7
-LED_PIN        = 14
+LED_PIN        = 12
 LED_FREQ_HZ    = 800000
 LED_DMA        = 10
 LED_BRIGHTNESS = 64
