@@ -16,18 +16,35 @@ def send_pixels(colors):
     """
     Send an array of [(R, G, B), ...] to the strip.
     """
-    # WS2812 expects GRB order; pigpio adds the latch automatically.
-    data = bytearray()
-    for r, g, b in colors:
-        data += bytes([g, r, b])
-
-    # Build the wave and transmit
     pi.wave_clear()
-    pi.wave_add_serial(LED_PIN, FREQ, data, 0, 8, 2)  # 8-bit, T1=1us, T2=2us by default
+    
+    # WS2812 timing constants (in microseconds)
+    T0H = 0.4   # 0 bit high time
+    T0L = 0.85  # 0 bit low time  
+    T1H = 0.8   # 1 bit high time
+    T1L = 0.45  # 1 bit low time
+    
+    # Build waveform for each pixel
+    for r, g, b in colors:
+        # WS2812 expects GRB order
+        for byte_val in [g, r, b]:
+            for bit in range(7, -1, -1):  # MSB first
+                if (byte_val >> bit) & 1:
+                    # Send '1' bit
+                    pi.wave_add_generic([pigpio.pulse(1 << LED_PIN, 0, int(T1H * 1000)),
+                                       pigpio.pulse(0, 1 << LED_PIN, int(T1L * 1000))])
+                else:
+                    # Send '0' bit  
+                    pi.wave_add_generic([pigpio.pulse(1 << LED_PIN, 0, int(T0H * 1000)),
+                                       pigpio.pulse(0, 1 << LED_PIN, int(T0L * 1000))])
+    
+    # Add reset pulse (>50us low)
+    pi.wave_add_generic([pigpio.pulse(0, 1 << LED_PIN, 100)])
+    
     wid = pi.wave_create()
     pi.wave_send_once(wid)
-
-    # wait for transmission to finish
+    
+    # Wait for transmission to finish
     while pi.wave_tx_busy():
         time.sleep(0.001)
     pi.wave_delete(wid)
