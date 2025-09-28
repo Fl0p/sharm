@@ -10,11 +10,15 @@ LED_BRIGHTNESS = 64
 LED_INVERT     = False
 LED_CHANNEL    = 0
 
-# При использовании pigpio нужно передать объект pi
-pi = pigpio.pi()  # подключение к локальному демону
+# Initialize pigpio (keep usage), but do not pass 'pi' into PixelStrip
+pi = pigpio.pi()
+if not pi.connected:
+    raise RuntimeError("pigpio daemon is not running. Start it with 'sudo systemctl start pigpiod'")
+
+# Initialize LED strip using rpi_ws281x without pigpio argument
 strip = PixelStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA,
                    LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL,
-                   strip_type=None, pi=pi)
+                   strip_type=None)
 strip.begin()
 
 def color_wipe(color, wait_ms=200):
