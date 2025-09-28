@@ -1,40 +1,50 @@
+#!/usr/bin/env python3
 import time
 import pigpio
-from rpi_ws281x import PixelStrip, Color
 
-LED_COUNT      = 7
-LED_PIN        = 12
-LED_FREQ_HZ    = 800000
-LED_DMA        = 10
-LED_BRIGHTNESS = 64
-LED_INVERT     = False
-LED_CHANNEL    = 0
+# === LED strip settings ===
+LED_PIN = 14         # GPIO pin for LED strip
+LED_COUNT = 7        # number of LEDs
+FREQ = 800000       # WS2812 frequency = 800 kHz
 
-# Initialize pigpio (keep usage), but do not pass 'pi' into PixelStrip
+# Initialize pigpio
 pi = pigpio.pi()
 if not pi.connected:
-    raise RuntimeError("pigpio daemon is not running. Start it with 'sudo systemctl start pigpiod'")
+    raise RuntimeError("❌ Failed to connect to pigpio daemon. Make sure it's running with sudo.")
 
-# Initialize LED strip using rpi_ws281x without pigpio argument
-strip = PixelStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA,
-                   LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL,
-                   strip_type=None)
-strip.begin()
+def send_pixels(colors):
+    """
+    Send an array of [(R, G, B), ...] to the strip.
+    """
+    # WS2812 expects GRB order; pigpio adds the latch automatically.
+    data = bytearray()
+    for r, g, b in colors:
+        data += bytes([g, r, b])
 
-def color_wipe(color, wait_ms=200):
-    for i in range(strip.numPixels()):
-        strip.setPixelColor(i, color)
-        strip.show()
-        time.sleep(wait_ms / 1000.0)
+    # Build the wave and transmit
+    pi.wave_clear()
+    pi.wave_add_serial(LED_PIN, FREQ, data, 0, 8, 2)  # 8-bit, T1=1us, T2=2us by default
+    wid = pi.wave_create()
+    pi.wave_send_once(wid)
+
+    # wait for transmission to finish
+    while pi.wave_tx_busy():
+        time.sleep(0.001)
+    pi.wave_delete(wid)
+
+def color_all(r, g, b):
+    """ Fill the entire strip with one color """
+    send_pixels([(r, g, b)] * LED_COUNT)
 
 try:
     while True:
-        color_wipe(Color(255, 0, 0))
+        color_all(255, 0, 0)  # red
         time.sleep(0.5)
-        color_wipe(Color(0, 255, 0))
+        color_all(0, 255, 0)  # green
         time.sleep(0.5)
-        color_wipe(Color(0, 0, 255))
+        color_all(0, 0, 255)  # blue
         time.sleep(0.5)
+
 except KeyboardInterrupt:
-    color_wipe(Color(0, 0, 0), 50)
+    color_all(0, 0, 0)  # turn off on exit
     pi.stop()
