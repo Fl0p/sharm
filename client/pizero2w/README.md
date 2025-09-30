@@ -3,8 +3,20 @@ This is sharm client for rasppery zero
 
 # SB Components audio codec hat WM8960 chip
 ---
-- setup https://learn.sb-components.co.uk/Audio-Codec-HAT-for-Raspberry-Pi
+- info https://learn.sb-components.co.uk/Audio-Codec-HAT-for-Raspberry-Pi
 - fixed driver https://github.com/Fl0p/WM8960-Audio-HAT.git
+- setup
+```
+git clone https://github.com/Fl0p/WM8960-Audio-HAT.git
+cd WM8960-Audio-HAT
+sudo ./install.sh
+sudo reboot
+aplay -l
+aplay /usr/share/sounds/alsa/Front_Center.wav
+arecord -l
+arecord -d 3 -f cd -t wav /tmp/test.wav && aplay /tmp/test.wav
+arecord -d 3 -f S16_LE -c 2 -r 36000 -t raw /tmp/test.pcm && aplay -t raw -f S16_LE -c 2 -r 48000 /tmp/test.pcm
+```
 
 # UPS-Lite V1.3 by XiaoJ
 ---
@@ -71,6 +83,8 @@ sudo apt install -y libasound2 alsa-utils mpv
 sudo apt install -y python3
 sudo apt install -y --upgrade python3-setuptools
 sudo apt install -y python3-venv python3-pip
+sudo apt install -y python3-smbus
+
 ```
 
 # GPIO
@@ -117,4 +131,5 @@ pip install --upgrade pip
 deps
 ```
 pip install --upgrade adafruit-blinka adafruit-python-shell adafruit-circuitpython-neopixel
+pip install pvporcupinedemo
 ```
