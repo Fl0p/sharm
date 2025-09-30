@@ -5,6 +5,8 @@ Provides event-driven interface for CW2015 fuel gauge and power monitoring.
 """
 import sys
 import struct
+import threading
+import time
 from enum import Enum
 from typing import Callable, Optional
 
@@ -43,10 +45,22 @@ class UPS:
     LOW_BATTERY_THRESHOLD = 5.0   # %
     FULL_BATTERY_THRESHOLD = 100.0  # %
     
-    def __init__(self):
-        """Initialize UPS monitor."""
+    def __init__(self, auto_update: bool = False, update_interval: float = 1.0):
+        """
+        Initialize UPS monitor.
+        
+        Args:
+            auto_update: If True, automatically call update() in background thread
+            update_interval: Interval in seconds for auto updates (default: 1.0)
+        """
         self._bus: Optional[smbus.SMBus] = None
         self._initialized = False
+        
+        # Auto update configuration
+        self._auto_update = auto_update
+        self._update_interval = update_interval
+        self._update_thread: Optional[threading.Thread] = None
+        self._stop_event = threading.Event()
         
         # Event callbacks
         self._on_battery_change: Optional[Callable] = None
@@ -80,9 +94,18 @@ class UPS:
         # Quick start fuel gauge
         self._quick_start()
         self._initialized = True
+        
+        # Start auto-update thread if enabled
+        if self._auto_update:
+            self._start_auto_update()
     
     def cleanup(self):
         """Release resources."""
+        # Stop auto-update thread
+        if self._update_thread and self._update_thread.is_alive():
+            self._stop_event.set()
+            self._update_thread.join(timeout=2.0)
+        
         if self._bus:
             try:
                 self._bus.close()
@@ -189,6 +212,25 @@ class UPS:
             self._bus.write_word_data(self.CW2015_ADDR, self.REG_MODE, 0x30)
         except Exception as e:
             print(f"QuickStart warning: {e}", file=sys.stderr)
+    
+    def _start_auto_update(self):
+        """Start background thread for automatic updates."""
+        if self._update_thread and self._update_thread.is_alive():
+            return
+        
+        self._stop_event.clear()
+        self._update_thread = threading.Thread(target=self._update_loop, daemon=True)
+        self._update_thread.start()
+    
+    def _update_loop(self):
+        """Background thread loop for automatic updates."""
+        while not self._stop_event.is_set():
+            try:
+                self.update()
+            except Exception as e:
+                print(f"Auto-update error: {e}", file=sys.stderr)
+            
+            self._stop_event.wait(self._update_interval)
     
     def __enter__(self):
         """Context manager entry."""

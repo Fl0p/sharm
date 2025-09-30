@@ -9,7 +9,7 @@ from ups import UPS, BatteryStatus
 
 def on_battery_changed(voltage: float, soc: float, status: BatteryStatus):
     """Called when battery state changes."""
-    print(f"📊 Battery changed: {soc:.1f}% ({voltage:.2f}V) - {status.value}")
+    print(f"📊 Battery changed: {soc:.4f}% ({voltage:.4f}V) - {status.value}")
 
 
 def on_power_changed(is_connected: bool):
@@ -22,7 +22,7 @@ def on_power_changed(is_connected: bool):
 
 def on_low_battery(voltage: float, soc: float):
     """Called when battery is low."""
-    print(f"⚠️  LOW BATTERY ALERT: {soc:.1f}% ({voltage:.2f}V) - CHARGE SOON!")
+    print(f"⚠️  LOW BATTERY ALERT: {soc:.4f}% ({voltage:.4f}V) - CHARGE SOON!")
 
 
 def main():
@@ -31,17 +31,17 @@ def main():
     print("Press Ctrl+C to exit.\n")
     
     try:
-        with UPS() as ups:
+        # auto_update=True - класс сам вызывает update() в фоне
+        with UPS(auto_update=True, update_interval=1.0) as ups:
             # Subscribe to events
             ups.on_battery_change(on_battery_changed)
             ups.on_power_change(on_power_changed)
             ups.on_low_battery(on_low_battery)
             
-            print("Subscribed to events. Monitoring...\n")
+            print("Subscribed to events. Auto-monitoring in background...\n")
             
-            # Event loop
+            # Just wait - updates happen automatically!
             while True:
-                ups.update()  # Check state and trigger events
                 time.sleep(1.0)
     
     except KeyboardInterrupt:
