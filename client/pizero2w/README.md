@@ -131,5 +131,5 @@ pip install --upgrade pip
 deps
 ```
 pip install --upgrade adafruit-blinka adafruit-python-shell adafruit-circuitpython-neopixel
-pip install pvporcupinedemo
+pip install pyaudio pvporcupinedemo
 ```

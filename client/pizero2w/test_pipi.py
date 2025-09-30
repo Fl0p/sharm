@@ -4,6 +4,8 @@ import subprocess
 import time
 import board
 import neopixel
+import random
+import glob
 
 ACCESS_KEY = os.getenv("PV_ACCESS_KEY", "YOUR_PICOVOICE_ACCESS_KEY")
 
@@ -31,8 +33,12 @@ try:
         idx = porcupine.process(pcm)
         if idx >= 0:
             print(f"Wake word: {keywords[idx]}")
-            # Play sound
-            subprocess.Popen(["aplay", os.path.expanduser("~/peedar.wav")])
+            # Play sound - pick random hello file
+            sounds_dir = os.path.join(os.path.dirname(__file__), "sounds")
+            hello_files = glob.glob(os.path.join(sounds_dir, "hello_*.wav"))
+            if hello_files:
+                random_sound = random.choice(hello_files)
+                subprocess.Popen(["aplay", random_sound])
             # Light up blue for 2 seconds
             pixels.fill((0, 0, 255))
             time.sleep(2)

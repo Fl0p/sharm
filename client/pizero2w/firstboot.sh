@@ -10,7 +10,7 @@ fi
 # raspi-config
 echo "Enabling i2c, i2s, spi"
 CONFIG="/boot/firmware/config.txt"
-for param in "dtparam=i2c_arm=on" "dtparam=i2s=on" "dtparam=spi=on"; do
+for param in "dtparam=i2c_arm=on" "dtparam=i2s=on" "dtparam=spi=on" "enable_uart=1"; do
   if ! grep -q "^$param" "$CONFIG"; then
     echo "$param" >> "$CONFIG"
   else
@@ -33,8 +33,8 @@ apt-get update
 apt-get -y -o Dpkg::Options::="--force-confnew" upgrade
 apt-get -y -o Dpkg::Options::="--force-confnew" install \
   git wget cmake curl vim htop i2c-tools pigpio \
-  python3 python3-pip python3-venv python3-setuptools python3-smbus python3-pigpio\
-  alsa-utils pulseaudio pulseaudio-utils libasound2 mpv
+  portaudio19-dev alsa-utils pulseaudio pulseaudio-utils libasound2 mpv \
+  python3 python3-dev python3-pip python3-venv python3-setuptools python3-smbus python3-pigpio
 
 # edit gpio service
 # sudo systemctl edit pigpiod
