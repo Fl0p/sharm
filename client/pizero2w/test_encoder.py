@@ -4,7 +4,7 @@ import time
 import sys
 import os
 
-PIN_BTN = 24
+PIN_BTN = 23
 WATCHDOG_MS = 1000   # emits level=2 if no edge for this period
 GLITCH_US   = 0      # start with 0; raise to 2000–5000 later if you see bounce
 

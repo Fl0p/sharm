@@ -1,14 +1,23 @@
 This is sharm client for rasppery zero
+===
+
+# SB Components audio codec hat WM8960 chip
 ---
-
-#1 SB Components audio codec hat WM8960 chip
 - setup https://learn.sb-components.co.uk/Audio-Codec-HAT-for-Raspberry-Pi
-- fixed driver https://github.com/ubopod/WM8960-Audio-HAT#
+- fixed driver https://github.com/Fl0p/WM8960-Audio-HAT.git
 
-#2 Waveshare UPS HAT (C) 
-- setup https://www.waveshare.com/wiki/UPS_HAT_(C)
+# UPS-Lite V1.3 by XiaoJ
+- setup https://github.com/linshuqin329/UPS-Lite/blob/master/UPS-Lite_V1.3_CW2015/Instructions%20for%20UPS-Lite%20V1.3.pdf
+- repo https://github.com/linshuqin329/UPS-Lite
+- script https://github.com/linshuqin329/UPS-Lite/blob/master/UPS-Lite_V1.3_CW2015/UPS_Lite_V1.3_CW2015.py
+```
+```
+while true; do echo "$(date +%H:%M:%S) - Reg 0x08: $(i2cget -y 1 0x62 0x08)  Reg 0x0A: $(i2cget -y 1 0x62 0x0A)"; sleep 0.5; done
+```
+```
 
 # Neopixel
+---
 DIN -> GPIO10 (MOSI). Enable SPI for sudo-less usage:
 ```
 sudo raspi-config  # Interface Options -> SPI -> Enable
@@ -18,6 +27,42 @@ sudo raspi-config  # Interface Options -> SPI -> Enable
 Run without sudo:
 ```
 python3 client/pizero2w/test_neopiel.py
+```
+
+
+Read buttons
+```
+while true; do raspi-gpio get 17; sleep 0.2; done
+```
+
+
+#pinout 
+```
++-----+-----------+---------+     +-----+-----------+---------+
+| Pin |   Name    |         |     | Pin |   Name    |         |
++-----+-----------+---------+     +-----+-----------+---------+
+|  1  |  3.3V     |         |     |  2  |  5V       |         |
+|  3  |  SDA1     | WM8960* |     |  4  |  5V       | Neopix  |
+|  5  |  SCL1     | WM8960* |     |  6  |  GND      | Neopix  |
+|  7  |  GPIO4    | UPS     |     |  8  |  TXD0     |         |
+|  9  |  GND      |         |     | 10  |  RXD0     |         |
+| 11  |  GPIO17   | WM8960_ |     | 12  |  GPIO18   | WM8960  |
+| 13  |  GPIO27   | Enc_A   |     | 14  |  GND      | Enc_Gnd |
+| 15  |  GPIO22   | Enc_B   |     | 16  |  GPIO23   | Enc_Btn |
+| 17  |  3.3V     | Enc_Vcc |     | 18  |  GPIO24   | WM8960? |
+| 19  |  MOSI     | Neopix  |     | 20  |  GND      | WM8960  |
+| 21  |  MISO     |         |     | 22  |  GPIO25   |         |
+| 23  |  SCLK     |         |     | 24  |  CE0      |         |
+| 25  |  GND      | WM8960  |     | 26  |  CE1      |         |
+| 27  |  SDA0     |         |     | 28  |  SCL0     |         |
+| 29  |  GPIO5    |         |     | 30  |  GND      |         |
+| 31  |  GPIO6    |         |     | 32  |  GPIO12   |         |
+| 33  |  GPIO13   |         |     | 34  |  GND      | WM8960  |
+| 35  |  GPIO19   | WM8960  |     | 36  |  GPIO16   |         |
+| 37  |  GPIO26   |         |     | 38  |  GPIO20   | WM8960  |
+| 39  |  GND      |         |     | 40  |  GPIO21   | WM8960  |
++-----+-----------+---------+     +-----+-----------+---------+
+
 ```
 
 
@@ -41,7 +86,11 @@ sudo apt install -y pigpio python3-pigpio
 sudo systemctl edit pigpiod
 ```
 
-# exit
+# edit
+```
+sudo systemctl edit pigpiod
+```
+
 ```
 [Service]
 ExecStart=
