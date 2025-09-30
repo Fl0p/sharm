@@ -7,13 +7,12 @@ This is sharm client for rasppery zero
 - fixed driver https://github.com/Fl0p/WM8960-Audio-HAT.git
 
 # UPS-Lite V1.3 by XiaoJ
+---
 - setup https://github.com/linshuqin329/UPS-Lite/blob/master/UPS-Lite_V1.3_CW2015/Instructions%20for%20UPS-Lite%20V1.3.pdf
 - repo https://github.com/linshuqin329/UPS-Lite
-- script https://github.com/linshuqin329/UPS-Lite/blob/master/UPS-Lite_V1.3_CW2015/UPS_Lite_V1.3_CW2015.py
-```
+- test:
 ```
 while true; do echo "$(date +%H:%M:%S) - Reg 0x08: $(i2cget -y 1 0x62 0x08)  Reg 0x0A: $(i2cget -y 1 0x62 0x0A)"; sleep 0.5; done
-```
 ```
 
 # Neopixel
@@ -27,12 +26,6 @@ sudo raspi-config  # Interface Options -> SPI -> Enable
 Run without sudo:
 ```
 python3 client/pizero2w/test_neopiel.py
-```
-
-
-Read buttons
-```
-while true; do raspi-gpio get 17; sleep 0.2; done
 ```
 
 
@@ -81,25 +74,38 @@ sudo apt install -y python3-venv python3-pip
 ```
 
 # GPIO
+---
+- Install
 ```
 sudo apt install -y pigpio python3-pigpio
-sudo systemctl edit pigpiod
 ```
 
-# edit
+- edit
 ```
 sudo systemctl edit pigpiod
 ```
-
+change to
 ```
 [Service]
 ExecStart=
-ExecStart=/usr/bin/pigpiod -t 1 -s 10 -x 0x08C00000
+ExecStart=/usr/bin/pigpiod -t 0 -s 10 -x 0x08C00010
 ```
 
 ```
 sudo systemctl enable --now pigpiod
 ```
+
+
+Read gpio
+```
+while true; do raspi-gpio get 4; sleep 0.2; done
+while true; do raspi-gpio get 27; sleep 0.2; done
+while true; do raspi-gpio get 22; sleep 0.2; done
+while true; do raspi-gpio get 23; sleep 0.2; done
+```
+
+# Python
+---
 
 venv
 ```
