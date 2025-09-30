@@ -32,7 +32,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get -y -o Dpkg::Options::="--force-confnew" upgrade
 apt-get -y -o Dpkg::Options::="--force-confnew" install \
-  git wget cmake curl vim htop i2c-tools pigpio \
+  git git-lfs wget cmake curl vim htop i2c-tools pigpio \
   portaudio19-dev alsa-utils pulseaudio pulseaudio-utils libasound2 mpv \
   python3 python3-dev python3-pip python3-venv python3-setuptools python3-smbus python3-pigpio
 

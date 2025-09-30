@@ -38,7 +38,7 @@ try:
             hello_files = glob.glob(os.path.join(sounds_dir, "hello_*.wav"))
             if hello_files:
                 random_sound = random.choice(hello_files)
-                subprocess.Popen(["aplay", random_sound])
+                subprocess.Popen(["aplay", "-D", "plughw:0,0", random_sound])
             # Light up blue for 2 seconds
             pixels.fill((0, 0, 255))
             time.sleep(2)
