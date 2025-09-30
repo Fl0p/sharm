@@ -4,8 +4,8 @@ import pvporcupine, pyaudio, struct, sys, os
 ACCESS_KEY = os.getenv("PV_ACCESS_KEY", "YOUR_PICOVOICE_ACCESS_KEY")
 
 # Path to custom wake word model
-keyword_paths = [os.path.join(os.path.dirname(__file__), "Hey-pipi_en_raspberry-pi_v3_0_0.ppn")]
-keywords = ["hey pipi"]  # for display purposes
+keyword_paths = [os.path.join(os.path.dirname(__file__), "hey-pee-dar_en_raspberry-pi_v3_0_0.ppn")]
+keywords = ["hey pee dar"]  # for display purposes
 porcupine = pvporcupine.create(access_key=ACCESS_KEY, keyword_paths=keyword_paths)
 
 pa = pyaudio.PyAudio()
