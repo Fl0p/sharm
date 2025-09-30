@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 import pvporcupine, pyaudio, struct, sys, os
+import subprocess
+import time
+import board
+import neopixel
 
 ACCESS_KEY = os.getenv("PV_ACCESS_KEY", "YOUR_PICOVOICE_ACCESS_KEY")
 
@@ -7,6 +11,12 @@ ACCESS_KEY = os.getenv("PV_ACCESS_KEY", "YOUR_PICOVOICE_ACCESS_KEY")
 keyword_paths = [os.path.join(os.path.dirname(__file__), "hey-pee-dar_en_raspberry-pi_v3_0_0.ppn")]
 keywords = ["hey pee dar"]  # for display purposes
 porcupine = pvporcupine.create(access_key=ACCESS_KEY, keyword_paths=keyword_paths)
+
+# Initialize NeoPixel
+LED_PIN = board.D10
+LED_COUNT = 7
+BRIGHTNESS = 0.2
+pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT, brightness=BRIGHTNESS, auto_write=True, pixel_order=neopixel.GRB)
 
 pa = pyaudio.PyAudio()
 stream = pa.open(rate=porcupine.sample_rate,
@@ -21,8 +31,18 @@ try:
         idx = porcupine.process(pcm)
         if idx >= 0:
             print(f"Wake word: {keywords[idx]}")
-            # TODO: вызвать вашу логику
+            # Play sound
+            subprocess.Popen(["aplay", os.path.expanduser("~/peedar.wav")])
+            # Light up blue for 2 seconds
+            pixels.fill((0, 0, 255))
+            time.sleep(2)
+            pixels.fill((0, 0, 0))
 except KeyboardInterrupt:
     pass
 finally:
+    pixels.fill((0, 0, 0))
+    try:
+        pixels.deinit()
+    except Exception:
+        pass
     stream.stop_stream(); stream.close(); pa.terminate(); porcupine.delete()
