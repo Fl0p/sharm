@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# check if sudo
+if [ "$EUID" -ne 0 ]; then
+    echo "Please run as root"
+    exit 1
+fi
+
 # raspi-config
 CONFIG="/boot/firmware/config.txt"
 for param in "dtparam=i2c_arm=on" "dtparam=i2s=on" "dtparam=spi=on"; do
@@ -21,8 +27,8 @@ apt-get -y install \
   alsa-utils pulseaudio pulseaudio-utils libasound2 mpv 
 
 #locale
-sudo locale-gen en_GB.UTF-8
-sudo update-locale LANG=en_GB.UTF-8 LC_ALL=en_GB.UTF-8
+locale-gen en_GB.UTF-8
+update-locale LANG=en_GB.UTF-8 LC_ALL=en_GB.UTF-8
 
 # edit gpio service
 # sudo systemctl edit pigpiod
@@ -33,7 +39,7 @@ sudo update-locale LANG=en_GB.UTF-8 LC_ALL=en_GB.UTF-8
 # --- WM8960-Audio-HAT ---
 git clone https://github.com/Fl0p/WM8960-Audio-HAT.git
 cd WM8960-Audio-HAT
-sudo ./install.sh
-sudo reboot
+./install.sh
+reboot
 
 # --- test ---
