@@ -67,11 +67,17 @@ def main():
         sum_val = (last_encoded << 2) | encoded
         
         if sum_val in (0b0001, 0b0111, 0b1110, 0b1000):
-            encoder_pos += 1
-            print(f"[ENC] {ts()} CW  pos={encoder_pos} A={a} B={b}", flush=True)
-        elif sum_val in (0b0010, 0b1011, 0b1101, 0b0100):
             encoder_pos -= 1
-            print(f"[ENC] {ts()} CCW pos={encoder_pos} A={a} B={b}", flush=True)
+        elif sum_val in (0b0010, 0b1011, 0b1101, 0b0100):
+            encoder_pos += 1
+        
+        # Convert to degrees (80 pulses per rotation -> 360 degrees)
+        degrees = encoder_pos * 4.5
+        rotations = int(degrees // 360)
+        remainder = degrees % 360
+        
+        direction = "CW " if sum_val in (0b0010, 0b1011, 0b1101, 0b0100) else "CCW"
+        print(f"[ENC] {ts()} {direction} rotations={rotations} remainder={remainder:.1f}° (raw={encoder_pos}) A={a} B={b}", flush=True)
         
         last_encoded = encoded
 
