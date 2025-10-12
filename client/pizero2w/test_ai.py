@@ -4,6 +4,7 @@ import time
 import subprocess
 import random
 import glob
+import getpass
 import board
 import neopixel
 
@@ -36,7 +37,7 @@ def on_wake_word_detected(keyword_index, keyword_name):
         hello_files = glob.glob(os.path.join(sounds_dir, "hello_*.wav"))
         if hello_files:
             random_sound = random.choice(hello_files)
-            subprocess.Popen(["aplay", random_sound])
+            subprocess.Popen(["aplay", "-D", "default", random_sound])
         pixels.fill((0, 0, 128))
     elif keyword_index == 1:
         # Keyword 1: Purple light
@@ -92,6 +93,7 @@ ups.on_battery_change(on_battery_change)
 ups.on_power_change(on_power_change)
 ups.on_low_battery(on_low_battery)
 
+print(f"Running as user: {getpass.getuser()}")
 print("Listening... Say:", ", ".join(keywords))
 print("[RUN] Encoder callbacks armed")
 print("[RUN] UPS monitoring started")

@@ -2,6 +2,7 @@
 import pvporcupine, pyaudio, struct, sys, os
 import subprocess
 import time
+import getpass
 import board
 import neopixel
 import random
@@ -26,6 +27,7 @@ stream = pa.open(rate=porcupine.sample_rate,
                  channels=1, format=pyaudio.paInt16,
                  input=True, frames_per_buffer=porcupine.frame_length)
 
+print(f"Running as user: {getpass.getuser()}")
 print("Listening... Say:", ", ".join(keywords))
 try:
     while True:
@@ -40,7 +42,7 @@ try:
                 hello_files = glob.glob(os.path.join(sounds_dir, "hello_*.wav"))
                 if hello_files:
                     random_sound = random.choice(hello_files)
-                    subprocess.Popen(["aplay", random_sound])
+                    subprocess.Popen(["aplay", "-D", "default", random_sound])
                 pixels.fill((0, 0, 128))
                 time.sleep(2)
                 pixels.fill((0, 0, 0))
