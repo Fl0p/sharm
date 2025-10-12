@@ -11,7 +11,7 @@ from enum import Enum
 from typing import Callable, Optional
 
 import smbus
-import RPi.GPIO as GPIO
+import pigpio
 
 
 class BatteryStatus(Enum):
@@ -54,6 +54,7 @@ class UPS:
             update_interval: Interval in seconds for auto updates (default: 1.0)
         """
         self._bus: Optional[smbus.SMBus] = None
+        self._pi: Optional[pigpio.pi] = None
         self._initialized = False
         
         # Auto update configuration
@@ -78,10 +79,14 @@ class UPS:
         if self._initialized:
             return
         
+        # Initialize pigpio
+        self._pi = pigpio.pi()
+        if not self._pi.connected:
+            raise RuntimeError("pigpiod is not running! Start it with: sudo pigpiod")
+        
         # Setup GPIO
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setwarnings(False)
-        GPIO.setup(self.POWER_GPIO, GPIO.IN)
+        self._pi.set_mode(self.POWER_GPIO, pigpio.INPUT)
+        self._pi.set_pull_up_down(self.POWER_GPIO, pigpio.PUD_UP)
         
         # Initialize I2C
         try:
@@ -113,10 +118,12 @@ class UPS:
                 pass
             self._bus = None
         
-        try:
-            GPIO.cleanup()
-        except Exception:
-            pass
+        if self._pi:
+            try:
+                self._pi.stop()
+            except Exception:
+                pass
+            self._pi = None
         
         self._initialized = False
     
@@ -155,7 +162,7 @@ class UPS:
         if not self._initialized:
             raise RuntimeError("UPS not initialized. Call initialize() first.")
         
-        return GPIO.input(self.POWER_GPIO) == GPIO.HIGH
+        return self._pi.read(self.POWER_GPIO) == 1
     
     def get_battery_status(self, soc: float) -> BatteryStatus:
         """Get battery status based on SOC."""

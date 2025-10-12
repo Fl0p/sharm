@@ -40,7 +40,7 @@ try:
                 hello_files = glob.glob(os.path.join(sounds_dir, "hello_*.wav"))
                 if hello_files:
                     random_sound = random.choice(hello_files)
-                    subprocess.Popen(["aplay", "-D", "plughw:0,0", random_sound])
+                    subprocess.Popen(["aplay", random_sound])
                 pixels.fill((0, 0, 128))
                 time.sleep(2)
                 pixels.fill((0, 0, 0))
