@@ -41,9 +41,13 @@ def on_wake_word_detected(keyword_index, keyword_name):
             env['XDG_RUNTIME_DIR'] = '/tmp/xdg_runtime'
             subprocess.Popen(["aplay", random_sound], env=env)
         pixels.fill((0, 0, 128))
+        time.sleep(2)
+        pixels.fill((0, 0, 0))
     elif keyword_index == 1:
         # Keyword 1: Purple light
         pixels.fill((128, 0, 128))
+        time.sleep(2)
+        pixels.fill((0, 0, 0))
 
 
 # Encoder rotation handler
@@ -89,7 +93,7 @@ encoder = RotaryEncoder(pin_btn=23, pin_enc_a=27, pin_enc_b=22)
 encoder.set_button_callback(on_button_press)
 encoder.set_rotation_callback(on_encoder_rotation)
 
-ups = UPS(auto_update=True, update_interval=2.0)
+ups = UPS(auto_update=True, update_interval=10.0)
 ups.initialize()
 ups.on_battery_change(on_battery_change)
 ups.on_power_change(on_power_change)
