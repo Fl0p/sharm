@@ -42,7 +42,7 @@ def main():
             
             # Just wait - updates happen automatically!
             while True:
-                time.sleep(1.0)
+                time.sleep(10.0)
     
     except KeyboardInterrupt:
         print("\nExiting...")

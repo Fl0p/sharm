@@ -40,7 +40,7 @@ def main():
                 # Trigger events (optional, for event-driven usage)
                 ups.update()
                 
-                time.sleep(2.0)
+                time.sleep(5.0)
     
     except KeyboardInterrupt:
         print("\nExiting...")
