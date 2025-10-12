@@ -9,6 +9,7 @@ import neopixel
 
 from wake_word_detector import WakeWordDetector
 from rotary_encoder import RotaryEncoder
+from ups import UPS, BatteryStatus
 
 
 # Initialize NeoPixel
@@ -37,13 +38,9 @@ def on_wake_word_detected(keyword_index, keyword_name):
             random_sound = random.choice(hello_files)
             subprocess.Popen(["aplay", random_sound])
         pixels.fill((0, 0, 128))
-        time.sleep(2)
-        pixels.fill((0, 0, 0))
     elif keyword_index == 1:
-        # Keyword 1: Only purple light for 2 seconds
+        # Keyword 1: Purple light
         pixels.fill((128, 0, 128))
-        time.sleep(2)
-        pixels.fill((0, 0, 0))
 
 
 # Encoder rotation handler
@@ -61,6 +58,25 @@ def on_button_press(level, tick):
     print(f"[BTN] {ts()} level={level} tick={tick}", flush=True)
 
 
+# UPS battery change handler
+def on_battery_change(voltage, soc, status):
+    """Handler for battery state changes"""
+    print(f"[UPS] {ts()} Battery: {voltage:.2f}V {soc:.1f}% [{status.value}]", flush=True)
+
+
+# UPS power change handler
+def on_power_change(is_connected):
+    """Handler for power adapter connection changes"""
+    state = "CONNECTED" if is_connected else "DISCONNECTED"
+    print(f"[UPS] {ts()} Power adapter: {state}", flush=True)
+
+
+# UPS low battery alert handler
+def on_low_battery(voltage, soc):
+    """Handler for low battery alert"""
+    print(f"[UPS] {ts()} ⚠️  LOW BATTERY ALERT! {voltage:.2f}V {soc:.1f}%", flush=True)
+
+
 # Initialize components
 keywords = ["hey-pee-dar", "hey-pipi"]
 detector = WakeWordDetector(keywords)
@@ -70,8 +86,15 @@ encoder = RotaryEncoder(pin_btn=23, pin_enc_a=27, pin_enc_b=22)
 encoder.set_button_callback(on_button_press)
 encoder.set_rotation_callback(on_encoder_rotation)
 
+ups = UPS(auto_update=True, update_interval=2.0)
+ups.initialize()
+ups.on_battery_change(on_battery_change)
+ups.on_power_change(on_power_change)
+ups.on_low_battery(on_low_battery)
+
 print("Listening... Say:", ", ".join(keywords))
 print("[RUN] Encoder callbacks armed")
+print("[RUN] UPS monitoring started")
 
 # Main loop
 try:
@@ -85,6 +108,7 @@ finally:
         pixels.deinit()
     except Exception:
         pass
+    ups.cleanup()
     encoder.cleanup()
     detector.cleanup()
     print("[CLEANUP] All resources cleaned up", flush=True)
