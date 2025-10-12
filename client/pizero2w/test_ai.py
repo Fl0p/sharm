@@ -85,6 +85,26 @@ def on_wake_word_detected(keyword_index, keyword_name):
 def on_encoder_rotation(direction, position, degrees, rotations):
     """Handler for encoder rotation"""
     print(f"[ENC] {ts()} {direction} rotations={rotations} remainder={degrees:.1f}° (raw={position})", flush=True)
+    
+    # Adjust volume
+    try:
+        # Get current volume
+        result = subprocess.run(
+            ["amixer", "get", "Master"],
+            env=get_audio_env(),
+            capture_output=True,
+            text=True
+        )
+        
+        # Change volume based on rotation direction
+        if direction == "CW":
+            subprocess.run(["amixer", "set", "Master", "5%+"], env=get_audio_env())
+        elif direction == "CCW":
+            subprocess.run(["amixer", "set", "Master", "5%-"], env=get_audio_env())
+            
+        print(f"[VOL] {ts()} Volume {direction}", flush=True)
+    except Exception as e:
+        print(f"[VOL] {ts()} Error adjusting volume: {e}", flush=True)
 
 
 # Button press handler
