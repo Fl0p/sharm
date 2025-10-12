@@ -10,11 +10,9 @@ import glob
 ACCESS_KEY = os.getenv("PV_ACCESS_KEY", "YOUR_PICOVOICE_ACCESS_KEY")
 
 # Path to custom wake word model
-keyword_paths = [
-    os.path.join(os.path.dirname(__file__), "hey-pee-dar_en_raspberry-pi_v3_0_0.ppn"),
-    os.path.join(os.path.dirname(__file__), "hey-pipi_en_raspberry-pi_v3_0_0.ppn")
-]
-keywords = ["hey pee dar", "hey pipi"]  # for display purposes
+keywords = ["hey-pee-dar", "hey-pipi"]
+keyword_paths = [os.path.join(os.path.dirname(__file__), f"{kw}.ppn") for kw in keywords]
+
 porcupine = pvporcupine.create(access_key=ACCESS_KEY, keyword_paths=keyword_paths)
 
 # Initialize NeoPixel
@@ -36,16 +34,21 @@ try:
         idx = porcupine.process(pcm)
         if idx >= 0:
             print(f"Wake word: {keywords[idx]}")
-            # Play sound - pick random hello file
-            sounds_dir = os.path.join(os.path.dirname(__file__), "sounds")
-            hello_files = glob.glob(os.path.join(sounds_dir, "hello_*.wav"))
-            if hello_files:
-                random_sound = random.choice(hello_files)
-                subprocess.Popen(["aplay", "-D", "plughw:0,0", random_sound])
-            # Light up blue for 2 seconds
-            pixels.fill((0, 0, 255))
-            time.sleep(2)
-            pixels.fill((0, 0, 0))
+            if idx == 0:
+                # Keyword 0: Play sound and light up blue
+                sounds_dir = os.path.join(os.path.dirname(__file__), "sounds")
+                hello_files = glob.glob(os.path.join(sounds_dir, "hello_*.wav"))
+                if hello_files:
+                    random_sound = random.choice(hello_files)
+                    subprocess.Popen(["aplay", "-D", "plughw:0,0", random_sound])
+                pixels.fill((0, 0, 128))
+                time.sleep(2)
+                pixels.fill((0, 0, 0))
+            elif idx == 1:
+                # Keyword 1: Only purple light for 2 seconds
+                pixels.fill((128, 0, 128))
+                time.sleep(2)
+                pixels.fill((0, 0, 0))
 except KeyboardInterrupt:
     pass
 finally:
