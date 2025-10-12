@@ -10,8 +10,11 @@ import glob
 ACCESS_KEY = os.getenv("PV_ACCESS_KEY", "YOUR_PICOVOICE_ACCESS_KEY")
 
 # Path to custom wake word model
-keyword_paths = [os.path.join(os.path.dirname(__file__), "hey-pee-dar_en_raspberry-pi_v3_0_0.ppn")]
-keywords = ["hey pee dar"]  # for display purposes
+keyword_paths = [
+    os.path.join(os.path.dirname(__file__), "hey-pee-dar_en_raspberry-pi_v3_0_0.ppn"),
+    os.path.join(os.path.dirname(__file__), "hey-pipi_en_raspberry-pi_v3_0_0.ppn")
+]
+keywords = ["hey pee dar", "hey pipi"]  # for display purposes
 porcupine = pvporcupine.create(access_key=ACCESS_KEY, keyword_paths=keyword_paths)
 
 # Initialize NeoPixel
