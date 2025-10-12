@@ -33,6 +33,9 @@ class RotaryEncoder:
         # Position tracking
         self.encoder_pos = 0
         
+        # State buffer for debouncing
+        self.state_buffer = []
+        
         # Initialize pigpio
         self.pi = pigpio.pi()
         if not self.pi.connected:
@@ -89,26 +92,49 @@ class RotaryEncoder:
         b = self.pi.read(self.pin_enc_b)
         encoded = (a << 1) | b
         
-        sum_val = (self.last_encoded << 2) | encoded
+        # Add state to buffer
+        self.state_buffer.append(encoded)
         
-        if sum_val in (0b0001, 0b0111, 0b1110, 0b1000):
-            self.encoder_pos -= 1
-            direction = 'CCW'
-        elif sum_val in (0b0010, 0b1011, 0b1101, 0b0100):
-            self.encoder_pos += 1
-            direction = 'CW'
-        else:
+        # Process buffer only when both A=1 and B=1 (stable state)
+        if encoded == 0b11:
+            # Remove duplicates while preserving order
+            unique_states = []
+            for state in self.state_buffer:
+                if not unique_states or unique_states[-1] != state:
+                    unique_states.append(state)
+            
+            # Need at least 2 states to determine direction
+            if len(unique_states) >= 2:
+                # Check sequence for CW: 11 -> 01 -> 00 -> 10 -> 11
+                # or CCW: 11 -> 10 -> 00 -> 01 -> 11
+                sum_val = (self.last_encoded << 2) | encoded
+                
+                if sum_val in (0b0001, 0b0111, 0b1110, 0b1000):
+                    self.encoder_pos -= 1
+                    direction = 'CCW'
+                elif sum_val in (0b0010, 0b1011, 0b1101, 0b0100):
+                    self.encoder_pos += 1
+                    direction = 'CW'
+                else:
+                    # Clear buffer and update last state
+                    self.state_buffer = []
+                    self.last_encoded = encoded
+                    return
+                
+                degrees = self.encoder_pos * (360.0 / self.pulses_per_rotation)
+                rotations = int(degrees // 360)
+                remainder = degrees % 360
+                
+                if self.rotation_callback:
+                    self.rotation_callback(direction, self.encoder_pos, remainder, rotations)
+            
+            # Clear buffer and update last state
+            self.state_buffer = []
             self.last_encoded = encoded
-            return
         
-        degrees = self.encoder_pos * (360.0 / self.pulses_per_rotation)
-        rotations = int(degrees // 360)
-        remainder = degrees % 360
-        
-        if self.rotation_callback:
-            self.rotation_callback(direction, self.encoder_pos, remainder, rotations)
-        
-        self.last_encoded = encoded
+        # Limit buffer size to prevent memory issues
+        if len(self.state_buffer) > 10:
+            self.state_buffer = self.state_buffer[-10:]
     
     def get_position(self):
         """Get current encoder position"""

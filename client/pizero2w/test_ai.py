@@ -105,7 +105,14 @@ def on_button_press(level, tick):
         print(f"[WD]  {ts()} watchdog timeout", flush=True)
         return
     print(f"[BTN] {ts()} level={level} tick={tick}", flush=True)
-    stop_mpv()
+    
+    # Toggle MPV
+    global mpv_process
+    if not stop_mpv():
+        # Start MPV if it wasn't running
+        mpv_process = subprocess.Popen(["mpv", "https://stream.radioparadise.com/aac-128"], env=get_audio_env())
+        print(f"[MPV] {ts()} Started")
+        flash_pixels((128, 0, 128))
 
 
 # UPS battery change handler
