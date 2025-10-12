@@ -26,6 +26,20 @@ def ts():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t)) + f".{int((t % 1)*1000):03d}"
 
 
+def get_audio_env():
+    """Get environment with PulseAudio settings"""
+    env = os.environ.copy()
+    env['XDG_RUNTIME_DIR'] = '/tmp/xdg_runtime'
+    return env
+
+
+def flash_pixels(color, duration=1):
+    """Flash pixels with given color for duration seconds"""
+    pixels.fill(color)
+    time.sleep(duration)
+    pixels.fill((0, 0, 0))
+
+
 # Wake word detection handler
 def on_wake_word_detected(keyword_index, keyword_name):
     """Handler for wake word detection"""
@@ -37,17 +51,12 @@ def on_wake_word_detected(keyword_index, keyword_name):
         hello_files = glob.glob(os.path.join(sounds_dir, "hello_*.wav"))
         if hello_files:
             random_sound = random.choice(hello_files)
-            env = os.environ.copy()
-            env['XDG_RUNTIME_DIR'] = '/tmp/xdg_runtime'
-            subprocess.Popen(["aplay", random_sound], env=env)
-        pixels.fill((0, 0, 128))
-        time.sleep(2)
-        pixels.fill((0, 0, 0))
+            subprocess.Popen(["aplay", random_sound], env=get_audio_env())
+        flash_pixels((0, 0, 128))
     elif keyword_index == 1:
-        # Keyword 1: Purple light
-        pixels.fill((128, 0, 128))
-        time.sleep(2)
-        pixels.fill((0, 0, 0))
+        # Keyword 1: Start radio and purple light
+        subprocess.Popen(["mpv", "https://stream.radioparadise.com/aac-128"], env=get_audio_env())
+        flash_pixels((128, 0, 128))
 
 
 # Encoder rotation handler
