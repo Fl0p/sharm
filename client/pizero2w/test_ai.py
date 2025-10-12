@@ -86,21 +86,12 @@ def on_encoder_rotation(direction, position, degrees, rotations):
     """Handler for encoder rotation"""
     print(f"[ENC] {ts()} {direction} rotations={rotations} remainder={degrees:.1f}° (raw={position})", flush=True)
     
-    # Adjust volume
+    # Adjust volume using pactl for PulseAudio
     try:
-        # Get current volume
-        result = subprocess.run(
-            ["amixer", "get", "Master"],
-            env=get_audio_env(),
-            capture_output=True,
-            text=True
-        )
-        
-        # Change volume based on rotation direction
         if direction == "CW":
-            subprocess.run(["amixer", "set", "Master", "5%+"], env=get_audio_env())
+            subprocess.run(["pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%"], env=get_audio_env())
         elif direction == "CCW":
-            subprocess.run(["amixer", "set", "Master", "5%-"], env=get_audio_env())
+            subprocess.run(["pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%"], env=get_audio_env())
             
         print(f"[VOL] {ts()} Volume {direction}", flush=True)
     except Exception as e:
