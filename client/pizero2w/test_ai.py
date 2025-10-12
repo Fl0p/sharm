@@ -115,7 +115,7 @@ def on_encoder_rotation(direction, position, degrees, rotations):
 # Button press handler
 def on_button_press(level, tick):
     """Handler for button events"""
-    if level == 1:
+    if level == 0:
       print(f"[BTN] {ts()} level={level} tick={tick}", flush=True)
       # Toggle radio
       toggle_radio()

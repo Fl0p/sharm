@@ -73,7 +73,7 @@ class RotaryEncoder:
         Set callback for button events
         
         Args:
-            callback: Function(level, tick) - level: 0=pressed, 1=released, 2=timeout
+            callback: Function(level, tick) - level: 0=released, 1=pressed, 2=timeout
         """
         self.button_callback = callback
     
@@ -90,7 +90,9 @@ class RotaryEncoder:
     def _btn_handler(self, gpio, level, tick):
         """Internal button event handler"""
         if self.button_callback:
-            self.button_callback(level, tick)
+            # Invert level: 0->1, 1->0, 2 stays 2 (timeout)
+            inverted_level = (1 - level) if level < 2 else level
+            self.button_callback(inverted_level, tick)
     
     def _enc_handler(self, gpio, level, tick):
         """Internal encoder event handler"""
