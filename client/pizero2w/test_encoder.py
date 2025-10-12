@@ -18,7 +18,8 @@ def main():
         pin_enc_b=22,
         watchdog_ms=1000,
         glitch_us=0,
-        pulses_per_rotation=80
+        pulses_per_rotation=80,
+        debug=True
     )
     
     print(f"[INIT] RotaryEncoder initialized", flush=True)

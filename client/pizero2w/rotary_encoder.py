@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 import pigpio
 import time
+import sys
 
 
 class RotaryEncoder:
     """Rotary encoder with button using pigpio"""
     
     def __init__(self, pin_btn=23, pin_enc_a=27, pin_enc_b=22, 
-                 watchdog_ms=1000, glitch_us=0, pulses_per_rotation=80):
+                 watchdog_ms=1000, glitch_us=0, pulses_per_rotation=80, debug=False):
         """
         Initialize rotary encoder
         
@@ -18,6 +19,7 @@ class RotaryEncoder:
             watchdog_ms: Watchdog timeout in milliseconds
             glitch_us: Glitch filter in microseconds
             pulses_per_rotation: Number of pulses per full rotation
+            debug: Enable debug logging
         """
         self.pin_btn = pin_btn
         self.pin_enc_a = pin_enc_a
@@ -25,6 +27,7 @@ class RotaryEncoder:
         self.watchdog_ms = watchdog_ms
         self.glitch_us = glitch_us
         self.pulses_per_rotation = pulses_per_rotation
+        self.debug = debug
         
         # Callbacks
         self.button_callback = None
@@ -92,16 +95,28 @@ class RotaryEncoder:
         b = self.pi.read(self.pin_enc_b)
         encoded = (a << 1) | b
         
+        if self.debug:
+            print(f"[ENC_DBG] Handler called: gpio={gpio} A={a} B={b} encoded={encoded:02b}", flush=True)
+        
         # Add state to buffer
         self.state_buffer.append(encoded)
         
+        if self.debug:
+            print(f"[ENC_DBG] Buffer: {[f'{s:02b}' for s in self.state_buffer]}", flush=True)
+        
         # Process buffer only when both A=1 and B=1 (stable state)
         if encoded == 0b11:
+            if self.debug:
+                print(f"[ENC_DBG] A=1 B=1 detected, processing buffer...", flush=True)
+            
             # Remove duplicates while preserving order
             unique_states = []
             for state in self.state_buffer:
                 if not unique_states or unique_states[-1] != state:
                     unique_states.append(state)
+            
+            if self.debug:
+                print(f"[ENC_DBG] Unique states: {[f'{s:02b}' for s in unique_states]}", flush=True)
             
             # Need at least 2 states to determine direction
             if len(unique_states) >= 2:
@@ -109,13 +124,22 @@ class RotaryEncoder:
                 # or CCW: 11 -> 10 -> 00 -> 01 -> 11
                 sum_val = (self.last_encoded << 2) | encoded
                 
+                if self.debug:
+                    print(f"[ENC_DBG] last_encoded={self.last_encoded:02b} sum_val={sum_val:04b}", flush=True)
+                
                 if sum_val in (0b0001, 0b0111, 0b1110, 0b1000):
                     self.encoder_pos -= 1
                     direction = 'CCW'
+                    if self.debug:
+                        print(f"[ENC_DBG] CCW detected, pos={self.encoder_pos}", flush=True)
                 elif sum_val in (0b0010, 0b1011, 0b1101, 0b0100):
                     self.encoder_pos += 1
                     direction = 'CW'
+                    if self.debug:
+                        print(f"[ENC_DBG] CW detected, pos={self.encoder_pos}", flush=True)
                 else:
+                    if self.debug:
+                        print(f"[ENC_DBG] No valid direction, clearing buffer", flush=True)
                     # Clear buffer and update last state
                     self.state_buffer = []
                     self.last_encoded = encoded
@@ -127,6 +151,9 @@ class RotaryEncoder:
                 
                 if self.rotation_callback:
                     self.rotation_callback(direction, self.encoder_pos, remainder, rotations)
+            else:
+                if self.debug:
+                    print(f"[ENC_DBG] Not enough unique states ({len(unique_states)}), skipping", flush=True)
             
             # Clear buffer and update last state
             self.state_buffer = []
