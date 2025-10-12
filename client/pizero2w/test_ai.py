@@ -89,9 +89,9 @@ def on_encoder_rotation(direction, position, degrees, rotations):
     # Adjust volume using amixer
     try:
         if direction == "CW":
-            subprocess.run(["amixer", "set", "Master", "5%+"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["amixer", "set", "Master", "1%+"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         elif direction == "CCW":
-            subprocess.run(["amixer", "set", "Master", "5%-"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["amixer", "set", "Master", "1%-"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             
         print(f"[VOL] {ts()} Volume {direction}", flush=True)
     except Exception as e:
