@@ -120,12 +120,15 @@ class RotaryEncoder:
             
             # Need at least 2 states to determine direction
             if len(unique_states) >= 2:
+                # Use the second-to-last unique state as previous state
+                prev_state = unique_states[-2]
+                
                 # Check sequence for CW: 11 -> 01 -> 00 -> 10 -> 11
                 # or CCW: 11 -> 10 -> 00 -> 01 -> 11
-                sum_val = (self.last_encoded << 2) | encoded
+                sum_val = (prev_state << 2) | encoded
                 
                 if self.debug:
-                    print(f"[ENC_DBG] last_encoded={self.last_encoded:02b} sum_val={sum_val:04b}", flush=True)
+                    print(f"[ENC_DBG] prev_state={prev_state:02b} current={encoded:02b} sum_val={sum_val:04b}", flush=True)
                 
                 if sum_val in (0b0001, 0b0111, 0b1110, 0b1000):
                     self.encoder_pos -= 1
