@@ -68,7 +68,7 @@ def toggle_radio():
         stop_mpv()
         radio_is_playing = False
         print(f"[RADIO] {ts()} OFF")
-        pixels.fill((128, 0, 0), duration=0.1)
+        flash_pixels((128, 0, 0), 0.1)
     else:
         # Radio is not playing, start it
         mpv_process = subprocess.Popen(["mpv", "https://stream.radioparadise.com/aac-128"], env=get_audio_env())
