@@ -8,7 +8,7 @@ class RotaryEncoder:
     """Rotary encoder with button using pigpio"""
     
     def __init__(self, pin_btn=23, pin_enc_a=27, pin_enc_b=22, 
-                 watchdog_ms=1000, glitch_us=0, pulses_per_rotation=80, debug=False):
+                 watchdog_ms=1000, glitch_us=100, pulses_per_rotation=80, debug=False):
         """
         Initialize rotary encoder
         
@@ -55,6 +55,8 @@ class RotaryEncoder:
         self.pi.set_mode(self.pin_enc_b, pigpio.INPUT)
         self.pi.set_pull_up_down(self.pin_enc_a, pigpio.PUD_UP)
         self.pi.set_pull_up_down(self.pin_enc_b, pigpio.PUD_UP)
+        self.pi.set_glitch_filter(self.pin_enc_a, self.glitch_us)
+        self.pi.set_glitch_filter(self.pin_enc_b, self.glitch_us)
         
         enc_a_initial = self.pi.read(self.pin_enc_a)
         enc_b_initial = self.pi.read(self.pin_enc_b)
