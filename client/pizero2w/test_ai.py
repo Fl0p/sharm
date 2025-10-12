@@ -19,6 +19,9 @@ LED_COUNT = 7
 BRIGHTNESS = 0.2
 pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT, brightness=BRIGHTNESS, auto_write=True, pixel_order=neopixel.GRB)
 
+# Global MPV process
+mpv_process = None
+
 
 def ts():
     """Generate timestamp string"""
@@ -40,6 +43,21 @@ def flash_pixels(color, duration=1):
     pixels.fill((0, 0, 0))
 
 
+def stop_mpv():
+    """Stop MPV if it's running"""
+    global mpv_process
+    if mpv_process and mpv_process.poll() is None:
+        mpv_process.terminate()
+        try:
+            mpv_process.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+            mpv_process.kill()
+        print(f"[MPV] {ts()} Stopped")
+        mpv_process = None
+        return True
+    return False
+
+
 # Wake word detection handler
 def on_wake_word_detected(keyword_index, keyword_name):
     """Handler for wake word detection"""
@@ -54,8 +72,12 @@ def on_wake_word_detected(keyword_index, keyword_name):
             subprocess.Popen(["aplay", random_sound], env=get_audio_env())
         flash_pixels((0, 0, 128))
     elif keyword_index == 1:
-        # Keyword 1: Start radio and purple light
-        subprocess.Popen(["mpv", "https://stream.radioparadise.com/aac-128"], env=get_audio_env())
+        # Keyword 1: Toggle radio and purple light
+        global mpv_process
+        if not stop_mpv():
+            # Start MPV if it wasn't running
+            mpv_process = subprocess.Popen(["mpv", "https://stream.radioparadise.com/aac-128"], env=get_audio_env())
+            print(f"[MPV] {ts()} Started")
         flash_pixels((128, 0, 128))
 
 
@@ -72,6 +94,7 @@ def on_button_press(level, tick):
         print(f"[WD]  {ts()} watchdog timeout", flush=True)
         return
     print(f"[BTN] {ts()} level={level} tick={tick}", flush=True)
+    stop_mpv()
 
 
 # UPS battery change handler
@@ -120,6 +143,7 @@ try:
 except KeyboardInterrupt:
     print("\n[EXIT] KeyboardInterrupt", flush=True)
 finally:
+    stop_mpv()
     pixels.fill((0, 0, 0))
     try:
         pixels.deinit()
