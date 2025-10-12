@@ -19,8 +19,9 @@ LED_COUNT = 7
 BRIGHTNESS = 0.2
 pixels = neopixel.NeoPixel(LED_PIN, LED_COUNT, brightness=BRIGHTNESS, auto_write=True, pixel_order=neopixel.GRB)
 
-# Global MPV process
+# Global MPV process and state
 mpv_process = None
+radio_is_playing = False
 
 
 def ts():
@@ -58,6 +59,24 @@ def stop_mpv():
     return False
 
 
+def toggle_radio():
+    """Toggle radio playback on/off"""
+    global mpv_process, radio_is_playing
+    
+    if radio_is_playing:
+        # Radio is playing, stop it
+        stop_mpv()
+        radio_is_playing = False
+        print(f"[RADIO] {ts()} OFF")
+        pixels.fill((128, 0, 0), duration=0.1)
+    else:
+        # Radio is not playing, start it
+        mpv_process = subprocess.Popen(["mpv", "https://stream.radioparadise.com/aac-128"], env=get_audio_env())
+        radio_is_playing = True
+        print(f"[RADIO] {ts()} ON")
+        flash_pixels((128, 0, 128))
+
+
 # Wake word detection handler
 def on_wake_word_detected(keyword_index, keyword_name):
     """Handler for wake word detection"""
@@ -72,13 +91,8 @@ def on_wake_word_detected(keyword_index, keyword_name):
             subprocess.Popen(["aplay", random_sound], env=get_audio_env())
         flash_pixels((0, 0, 128))
     elif keyword_index == 1:
-        # Keyword 1: Toggle radio and purple light
-        global mpv_process
-        if not stop_mpv():
-            # Start MPV if it wasn't running
-            mpv_process = subprocess.Popen(["mpv", "https://stream.radioparadise.com/aac-128"], env=get_audio_env())
-            print(f"[MPV] {ts()} Started")
-        flash_pixels((128, 0, 128))
+        # Keyword 1: Toggle radio
+        toggle_radio()
 
 
 # Encoder rotation handler
@@ -106,13 +120,8 @@ def on_button_press(level, tick):
         return
     print(f"[BTN] {ts()} level={level} tick={tick}", flush=True)
     
-    # Toggle MPV
-    global mpv_process
-    if not stop_mpv():
-        # Start MPV if it wasn't running
-        mpv_process = subprocess.Popen(["mpv", "https://stream.radioparadise.com/aac-128"], env=get_audio_env())
-        print(f"[MPV] {ts()} Started")
-        flash_pixels((128, 0, 128))
+    # Toggle radio
+    toggle_radio()
 
 
 # UPS battery change handler
@@ -162,6 +171,7 @@ except KeyboardInterrupt:
     print("\n[EXIT] KeyboardInterrupt", flush=True)
 finally:
     stop_mpv()
+    radio_is_playing = False
     pixels.fill((0, 0, 0))
     try:
         pixels.deinit()
