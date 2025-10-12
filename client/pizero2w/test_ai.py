@@ -37,7 +37,9 @@ def on_wake_word_detected(keyword_index, keyword_name):
         hello_files = glob.glob(os.path.join(sounds_dir, "hello_*.wav"))
         if hello_files:
             random_sound = random.choice(hello_files)
-            subprocess.Popen(["aplay", "-D", "default", random_sound])
+            env = os.environ.copy()
+            env['XDG_RUNTIME_DIR'] = '/tmp/xdg_runtime'
+            subprocess.Popen(["aplay", random_sound], env=env)
         pixels.fill((0, 0, 128))
     elif keyword_index == 1:
         # Keyword 1: Purple light

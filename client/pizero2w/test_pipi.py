@@ -42,7 +42,9 @@ try:
                 hello_files = glob.glob(os.path.join(sounds_dir, "hello_*.wav"))
                 if hello_files:
                     random_sound = random.choice(hello_files)
-                    subprocess.Popen(["aplay", "-D", "default", random_sound])
+                    env = os.environ.copy()
+                    env['XDG_RUNTIME_DIR'] = '/tmp/xdg_runtime'
+                    subprocess.Popen(["aplay", random_sound], env=env)
                 pixels.fill((0, 0, 128))
                 time.sleep(2)
                 pixels.fill((0, 0, 0))
